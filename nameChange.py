@@ -2,7 +2,7 @@ import pandas as pd
 import re
 
 def main():
-    workbook = pd.ExcelFile(r'E:\siteNameChange.xlsx')
+    workbook = pd.ExcelFile(r'C:\siteNameChange.xlsx')
     siteName = pd.read_excel(workbook,sheet_name='SiteName')
     hub = pd.read_excel(workbook, sheet_name='HUB')
     fg = pd.read_excel(workbook, sheet_name='FG')
@@ -12,11 +12,21 @@ def main():
     asc = pd.read_excel(workbook, sheet_name='ASC-48')
     sla = pd.read_excel(workbook, sheet_name='SLA')
 
+    siteName['same'] = ""
+    siteName['oldHub'] = ""
+    siteName['newHub'] = ""
+    siteName['fg'] = ""
+    siteName['asr'] = ""
+    siteName['mux'] = ""
+    siteName['solar'] = ""
+    siteName['asc'] = ""
+    siteName['sla'] = ""
+
     for index, row in siteName.iterrows():
         val = row['site_old_name']
         if checkToStandartName(val):
 
-            siteName.loc[siteName['site_old_name'] == val, 'site_new_name'] = checkToSLA_update\
+            siteName.loc[siteName['site_old_name'] == val, 'site_new_name'], siteName['sla'][index] = checkToSLA_update\
                 (checkToASC_update
                  (checkToSolar_update
                   (checkToMUX_update
@@ -26,26 +36,45 @@ def main():
         else:
             siteName.loc[siteName['site_old_name'] == val, 'site_new_name'] = val
 
+
+    for i in siteName.index:
+        siteName['same'][i] = siteName['site_old_name'][i] == siteName['site_new_name'][i]
+        siteName['fg'][i] = 'same' if 'FG' in siteName['site_old_name'][i] and 'FG' in siteName['site_new_name'][i] else 'diff' if 'FG' in siteName['site_old_name'][i] or 'FG' in siteName['site_new_name'][i] else ""
+        siteName['asr'][i] = 'same' if ('ASR' in siteName['site_old_name'][i] and 'ASR' in siteName['site_new_name'][i]) or ('ATN' in siteName['site_old_name'][i] and 'ATN' in siteName['site_new_name'][i]) else 'diff' if ('ASR' in siteName['site_old_name'][i] or 'ASR' in siteName['site_new_name'][i]) or ('ATN' in siteName['site_old_name'][i] or 'ATN' in siteName['site_new_name'][i]) else ""
+        siteName['mux'][i] = 'same' if 'MUX' in siteName['site_old_name'][i] and 'MUX' in siteName['site_new_name'][i] else 'diff' if 'MUX' in siteName['site_old_name'][i] or 'MUX' in siteName['site_new_name'][i] else ""
+        siteName['solar'][i] = 'same' if 'Solar' in siteName['site_old_name'][i] and 'Solar' in siteName['site_new_name'][i] else 'diff' if 'Solar' in siteName['site_old_name'][i] or 'Solar' in siteName['site_new_name'][i] else ""
+        siteName['asc'][i] = 'same' if 'ASC' in siteName['site_old_name'][i] and 'ASC' in siteName['site_new_name'][i] else 'diff' if 'ASC' in siteName['site_old_name'][i] or 'ASC' in siteName['site_new_name'][i] else ""
+        if '_(' in siteName['site_old_name'][i]:
+            siteName['oldHub'][i] = siteName['site_old_name'][i].split('(')[1].split(')')[0]
+        if '_(' in siteName['site_new_name'][i]:
+            siteName['newHub'][i] = siteName['site_new_name'][i].split('(')[1].split(')')[0]
+
     siteName.to_excel('siteOldNewName.xlsx', index=False)
+
 
 
 def checkToStandartName(name):
     return name[:2].isalpha() and name[2:6].isdigit()
 
 def checkSiteInSheet(name,sheet):
+    return name[:6] in sheet['site'].values
+
+    """
     for index, row in sheet.iterrows():
         if row[0] == name[:6]:
             return True
     return False
-
+    """
 def insertLabel(name, label):
     if len(name.split('_')) == 1:
         name = name + '_' + label
         return name
-    elif (name[-2:] in ['S0','S1','S2','S3'] or name[-3:] in ['S0 ','S1 ','S2 ','S3 ']) and len(name.split('_')) == 2:
+    elif (name[-3:] in ['S10','S20','S40','S22','S32','S12','S21','S30','S11','S31','S01','S41','S42','S02','S00','S33']
+          or name[-4:] in ['S10 ','S20 ','S40 ','S22 ','S32 ','S12 ','S21 ','S30 ','S11 ','S31 ','S01 ','S41 ','S42 ','S02 ','S00 ','S33 ']) and len(name.split('_')) == 2:
         name = name[:name.find('_')] + '_' + label + name[name.find('_'):]
         return name
-    elif (name[-2:] in ['S0','S1','S2','S3'] or name[-3:] in ['S0 ','S1 ','S2 ','S3 ']) and len(name.split('_')) == 2 and '_(' in name:
+    elif (name[-2:] in ['S10','S20','S40','S22','S32','S12','S21','S30','S11','S31','S01','S41','S42','S02','S00','S33']
+          or name[-3:] in ['S10 ','S20 ','S40 ','S22 ','S32 ','S12 ','S21 ','S30 ','S11 ','S31 ','S01 ','S41 ','S42 ','S02 ','S00 ','S33 ']) and len(name.split('_')) == 2 and '_(' in name:
         name = name + '_' + label
         return name
 
@@ -56,7 +85,7 @@ def insertLabel(name, label):
         else:
             name = name.replace('_', '_' + label + '_', 1)
             return name
-    elif label == 'ASR':
+    elif label in ['ASR', 'ATN']:
         if '_FG' in name or '_DG' in name:
             name = name.replace('_FG', '_FG_' + label, 1)
             name = name.replace('_DG', '_DG_' + label, 1)
@@ -68,8 +97,9 @@ def insertLabel(name, label):
             name = name.replace('_', '_' + label + '_', 1)
             return name
     elif label == 'MUX':
-        if '_ASR' in name:
+        if '_ASR' in name or '_ATN' in name:
             name = name.replace('_ASR', '_ASR_' + label, 1)
+            name = name.replace('_ATN', '_ATN_' + label, 1)
             return name
         elif '_FG' in name or '_DG' in name:
             name = name.replace('_FG', '_FG_' + label, 1)
@@ -85,8 +115,9 @@ def insertLabel(name, label):
         if '_MUX' in name:
             name = name.replace('_MUX', '_MUX_' + label, 1)
             return name
-        elif '_ASR' in name:
+        elif '_ASR' in name or '_ATN' in name:
             name = name.replace('_ASR', '_ASR_' + label, 1)
+            name = name.replace('_ATN', '_ATN_' + label, 1)
             return name
         elif '_FG' in name or '_DG' in name:
             name = name.replace('_FG', '_FG_' + label, 1)
@@ -105,8 +136,9 @@ def insertLabel(name, label):
         elif '_MUX' in name:
             name = name.replace('_MUX', '_MUX_' + label, 1)
             return name
-        elif '_ASR' in name:
+        elif '_ASR' in name or '_ATN' in name:
             name = name.replace('_ASR', '_ASR_' + label, 1)
+            name = name.replace('_ATN', '_ATN_' + label, 1)
             return name
         elif '_FG' in name or '_DG' in name:
             name = name.replace('_FG', '_FG_' + label, 1)
@@ -155,12 +187,22 @@ def checkToFG_update(name, fg_sheet):
 
 def checkToASR_update(name, asr_sheet):
     if checkSiteInSheet(name, asr_sheet):
+        label = asr_sheet.loc[asr_sheet['site'] == name[:6]].iloc[0,1]
         if '_ASR' in name:
-            return name
+            if 'ASR' == label:
+                return name
+            else:
+                return name.replace('_ASR', '_'+label, 1)
+        elif '_ATN' in name:
+            if 'ATN' == label:
+                return name
+            else:
+                return name.replace('_ATN', '_'+label, 1)
         else:
-            return insertLabel(name, asr_sheet.loc[asr_sheet['site'] == name[:6]].iloc[0,1])
-    elif '_ASR' in name:
+            return insertLabel(name, label)
+    elif '_ASR' in name or '_ATN' in name:
         name = name.replace('_ASR', '', 1)
+        name = name.replace('_ATN', '', 1)
         return name
     return name
 
@@ -198,12 +240,34 @@ def checkToASC_update(name, asc_sheet):
     return name
 
 def checkToSLA_update(name, sla_sheet):
-    if name[-2:] in ['S0','S1','S2','S3'] or name[-3:] in ['S0 ','S1 ','S2 ','S3 ']:
-        return name
-    elif checkSiteInSheet(name, sla_sheet):
-        name = name + '_' + str(sla_sheet.loc[sla_sheet['site'] == name[:6]].iloc[0,1])
-        return name
-    return name
+    if checkSiteInSheet(name, sla_sheet):
+        sla = str(sla_sheet.loc[sla_sheet['site'] == name[:6]].iloc[0, 1])
+        if name[-3:] in ['S10','S20','S40','S22','S32','S12','S21','S30','S11','S31','S01','S41','S42','S02','S00','S33']:
+            if name[-3:] == sla:
+
+                return name, 'same'
+            else:
+                return name[:len(name)-3] + sla, 'diff'
+        elif name[-4:] in ['S10 ','S20 ','S40 ','S22 ','S32 ','S12 ','S21 ','S30 ','S11 ','S31 ','S01 ','S41 ','S42 ','S02 ','S00 ','S33 ']:
+            if name[-4:][:3] == sla:
+                return name[:len(name)-1], 'same'
+            else:
+                return name[:len(name) - 4] + sla, 'diff'
+        elif name[-2:] in ['S0','S1','S2','S3']:
+            return name[:len(name) - 2] + sla, 'diff'
+        elif name[-3:] in ['S0 ', 'S1 ', 'S2 ', 'S3 ']:
+            return name[:len(name) - 3] + sla, 'diff'
+        else:
+            return name + '_' + sla, 'diff'
+    else:
+        if name[-4:] in ['S10 ','S20 ','S40 ','S22 ','S32 ','S12 ','S21 ','S30 ','S11 ','S31 ','S01 ','S41 ','S42 ','S02 ','S00 ','S33 '] or name[-3:] in ['S0 ','S1 ','S2 ','S3 ']:
+            return name[:len(name)-1], 'same'
+        elif name[-3:] in ['S10','S20','S40','S22','S32','S12','S21','S30','S11','S31','S01','S41','S42','S02','S00','S33'] or name[-2:] in ['S0','S1','S2','S3']:
+            return name, 'same'
+        else:
+            return name, ""
+
+
 
 main()
 
