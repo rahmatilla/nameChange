@@ -51,7 +51,8 @@ def main():
 
     siteName.to_excel('siteOldNewName.xlsx', index=False)
 
-
+sla_lst = ['S10','S20','S30','S40','S00','S11','S21','S31','S41','S12','S22','S32','S42','S02','S23','S13','S33','S43','S03']
+sla_lst_p = ['S10 ','S20 ','S30 ','S40 ','S00 ','S11 ','S21 ','S31 ','S41 ','S12 ','S22 ','S32 ','S42 ','S02 ','S23 ','S13 ','S33 ','S43 ','S03 ']
 
 def checkToStandartName(name):
     return name[:2].isalpha() and name[2:6].isdigit()
@@ -69,12 +70,10 @@ def insertLabel(name, label):
     if len(name.split('_')) == 1:
         name = name + '_' + label
         return name
-    elif (name[-3:] in ['S10','S20','S40','S22','S32','S12','S21','S30','S11','S31','S01','S41','S42','S02','S00','S33']
-          or name[-4:] in ['S10 ','S20 ','S40 ','S22 ','S32 ','S12 ','S21 ','S30 ','S11 ','S31 ','S01 ','S41 ','S42 ','S02 ','S00 ','S33 ']) and len(name.split('_')) == 2:
+    elif (name[-3:] in sla_lst or name[-4:] in sla_lst_p) and len(name.split('_')) == 2:
         name = name[:name.find('_')] + '_' + label + name[name.find('_'):]
         return name
-    elif (name[-2:] in ['S10','S20','S40','S22','S32','S12','S21','S30','S11','S31','S01','S41','S42','S02','S00','S33']
-          or name[-3:] in ['S10 ','S20 ','S40 ','S22 ','S32 ','S12 ','S21 ','S30 ','S11 ','S31 ','S01 ','S41 ','S42 ','S02 ','S00 ','S33 ']) and len(name.split('_')) == 2 and '_(' in name:
+    elif (name[-3:] not in sla_lst or name[-4:] not in sla_lst_p) and len(name.split('_')) == 2 and '_(' in name:
         name = name + '_' + label
         return name
 
@@ -242,13 +241,13 @@ def checkToASC_update(name, asc_sheet):
 def checkToSLA_update(name, sla_sheet):
     if checkSiteInSheet(name, sla_sheet):
         sla = str(sla_sheet.loc[sla_sheet['site'] == name[:6]].iloc[0, 1])
-        if name[-3:] in ['S10','S20','S40','S22','S32','S12','S21','S30','S11','S31','S01','S41','S42','S02','S00','S33']:
+        if name[-3:] in sla_lst:
             if name[-3:] == sla:
 
                 return name, 'same'
             else:
                 return name[:len(name)-3] + sla, 'diff'
-        elif name[-4:] in ['S10 ','S20 ','S40 ','S22 ','S32 ','S12 ','S21 ','S30 ','S11 ','S31 ','S01 ','S41 ','S42 ','S02 ','S00 ','S33 ']:
+        elif name[-4:] in sla_lst_p:
             if name[-4:][:3] == sla:
                 return name[:len(name)-1], 'same'
             else:
@@ -260,9 +259,9 @@ def checkToSLA_update(name, sla_sheet):
         else:
             return name + '_' + sla, 'diff'
     else:
-        if name[-4:] in ['S10 ','S20 ','S40 ','S22 ','S32 ','S12 ','S21 ','S30 ','S11 ','S31 ','S01 ','S41 ','S42 ','S02 ','S00 ','S33 '] or name[-3:] in ['S0 ','S1 ','S2 ','S3 ']:
+        if name[-4:] in sla_lst_p or name[-3:] in ['S0 ','S1 ','S2 ','S3 ']:
             return name[:len(name)-1], 'same'
-        elif name[-3:] in ['S10','S20','S40','S22','S32','S12','S21','S30','S11','S31','S01','S41','S42','S02','S00','S33'] or name[-2:] in ['S0','S1','S2','S3']:
+        elif name[-3:] in sla_lst or name[-2:] in ['S0','S1','S2','S3']:
             return name, 'same'
         else:
             return name, ""
