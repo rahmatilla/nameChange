@@ -12,15 +12,6 @@ def main():
     asc = pd.read_excel(workbook, sheet_name='ASC-48').astype('str')
     sla = pd.read_excel(workbook, sheet_name='SLA').astype('str')
 
-    # siteName = siteName.astype('str')
-    # hub = hub.astype('str')
-    # fg = fg.astype('str')
-    # asr = asr.astype('str')
-    # mux = mux.astype('str')
-    # solar = solar.astype('str')
-    # asc = asc.astype('str')
-    # sla = sla.astype('str')
-
     siteName['same'] = ""
     siteName['oldHub'] = ""
     siteName['newHub'] = ""
