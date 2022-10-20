@@ -3,14 +3,23 @@ import re
 
 def main():
     workbook = pd.ExcelFile(r'C:\siteNameChange.xlsx')
-    siteName = pd.read_excel(workbook,sheet_name='SiteName')
-    hub = pd.read_excel(workbook, sheet_name='HUB')
-    fg = pd.read_excel(workbook, sheet_name='FG')
-    asr = pd.read_excel(workbook, sheet_name='ASR')
-    mux = pd.read_excel(workbook, sheet_name='MUX')
-    solar = pd.read_excel(workbook, sheet_name='Solar')
-    asc = pd.read_excel(workbook, sheet_name='ASC-48')
-    sla = pd.read_excel(workbook, sheet_name='SLA')
+    siteName = pd.read_excel(workbook,sheet_name='SiteName').astype('str')
+    hub = pd.read_excel(workbook, sheet_name='HUB').astype('str')
+    fg = pd.read_excel(workbook, sheet_name='FG').astype('str')
+    asr = pd.read_excel(workbook, sheet_name='ASR').astype('str')
+    mux = pd.read_excel(workbook, sheet_name='MUX').astype('str')
+    solar = pd.read_excel(workbook, sheet_name='Solar').astype('str')
+    asc = pd.read_excel(workbook, sheet_name='ASC-48').astype('str')
+    sla = pd.read_excel(workbook, sheet_name='SLA').astype('str')
+
+    # siteName = siteName.astype('str')
+    # hub = hub.astype('str')
+    # fg = fg.astype('str')
+    # asr = asr.astype('str')
+    # mux = mux.astype('str')
+    # solar = solar.astype('str')
+    # asc = asc.astype('str')
+    # sla = sla.astype('str')
 
     siteName['same'] = ""
     siteName['oldHub'] = ""
