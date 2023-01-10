@@ -12,6 +12,7 @@ def main():
     asc = pd.read_excel(workbook, sheet_name='ASC-48').astype('str')
     sla = pd.read_excel(workbook, sheet_name='SLA').astype('str')
 
+
     siteName['same'] = ""
     siteName['oldHub'] = ""
     siteName['newHub'] = ""
@@ -51,8 +52,8 @@ def main():
 
     siteName.to_excel('siteOldNewName.xlsx', index=False)
 
-sla_lst = ['S10','S20','S30','S40','S00','S11','S21','S31','S41','S12','S22','S32','S42','S02','S23','S13','S33','S43','S03']
-sla_lst_p = ['S10 ','S20 ','S30 ','S40 ','S00 ','S11 ','S21 ','S31 ','S41 ','S12 ','S22 ','S32 ','S42 ','S02 ','S23 ','S13 ','S33 ','S43 ','S03 ']
+sla_lst = ['S10','S20','S30','S40','S00','S11','S21','S31','S41', 'S01', 'S12','S22','S32','S42','S02','S23','S13','S33','S43','S03']
+sla_lst_p = ['S10 ','S20 ','S30 ','S40 ','S00 ','S11 ','S21 ','S31 ','S41 ', 'S01 ', 'S12 ','S22 ','S32 ','S42 ','S02 ','S23 ','S13 ','S33 ','S43 ','S03 ']
 
 def checkToStandartName(name):
     return name[:2].isalpha() and name[2:6].isdigit()
@@ -167,7 +168,10 @@ def checkToHub_update(name, hub_sheet):
             name = name + '_(' + str(hub_sheet.loc[hub_sheet['site'] == name[:6]].iloc[0,1]) + ')'
             return name
     elif '_(' in name:
-        name = name.split('_',2)[0] + '_' + name.split('_',2)[2]
+        if len(name.split('_')) > 2:
+            name = name.split('_',2)[0] + '_' + name.split('_',2)[2]
+        else:
+            name = name.split('_', 2)[0]
         return name
     else:
         return name
